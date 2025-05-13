@@ -1,0 +1,111 @@
+openapi: 3.0.0
+info:
+  title: FOFA Public API
+  description: REST API specification for FOFA (Fingerprint of All)
+  version: "1.0.0"
+servers:
+  - url: https://fofa.info
+    description: FOFA API Server
+paths:
+  /api/v1/info/my:
+    get:
+      summary: Get user account information
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User account info
+  /api/v1/search/all:
+    get:
+      summary: Perform a FOFA search
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: qbase64
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Base64-encoded FOFA search query
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: size
+          in: query
+          schema:
+            type: integer
+        - name: fields
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results
+  /api/v1/search/stats:
+    get:
+      summary: Perform a stats search
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: qbase64
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Base64-encoded FOFA search query
+        - name: fields
+          in: query
+          schema:
+            type: string
+            description: Fields to be grouped
+      responses:
+        '200':
+          description: Aggregated stats
+  /api/v1/host/{ip}:
+    get:
+      summary: Get details of a specific IP
+      parameters:
+        - name: ip
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Host details

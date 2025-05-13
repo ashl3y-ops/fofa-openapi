@@ -1,125 +1,73 @@
-name: FOFA
-version: "1.0.0"
-category: Threat Intelligence
-uuid: fofa-1234
-description: FOFA IP Analysis Integration
-vendor: FOFA
+openapi: 3.0.3
+info:
+  title: FOFA Search API
+  description: FOFA Search Engine API ile arama sorguları yapmayı sağlar.
+  version: 1.0.0
 
-config_meta:
-  - name: base_url
-    type: string
-    default: https://fofa.info/api
-    required: true
-  - name: api_key
-    type: password
-    required: true
-    placeholder: token_xxxx...
+servers:
+  - url: https://fofa.info
+    description: FOFA API Ana URL
 
-actions:
-  - name: get_host_info
-    display_name: Get Host Info
-    input_params:
-      - name: ip
-        type: string
-        required: false
-        default: 8.8.8.8
-    http:
-      method: GET
-      url: "{{base_url}}/v1/search/host"
-      headers:
-        Authorization: "token {{api_key}}"
-      query_params:
-        q: "{{ip}}"
-    output_params:
-      - name: results
-        type: object
+components:
+  securitySchemes:
+    ApiKeyQuery:
+      type: apiKey
+      in: query
+      name: key 
 
-  - name: get_ip_summary
-    display_name: Get IP Summary
-    input_params:
-      - name: ip
-        type: string
-        required: true
-    http:
-      method: GET
-      url: "{{base_url}}/v1/ip_summary"
-      headers:
-        Authorization: "token {{api_key}}"
-      query_params:
-        ip: "{{ip}}"
-    output_params:
-      - name: ip
-        type: string
-      - name: country
-        type: string
-      - name: region
-        type: string
-      - name: isp
-        type: string
-      - name: status
-        type: number
-
-  - name: get_ip_report
-    display_name: Get IP Report
-    input_params:
-      - name: ip
-        type: string
-        required: true
-    http:
-      method: GET
-      url: "{{base_url}}/v1/ip_report"
-      headers:
-        Authorization: "token {{api_key}}"
-      query_params:
-        ip: "{{ip}}"
-    output_params:
-      - name: issues
-        type: object
-      - name: tags
-        type: list
-      - name: score
-        type: object
-
-  - name: get_vpn_info
-    display_name: Get VPN Information
-    input_params:
-      - name: ip
-        type: string
-        required: true
-    http:
-      method: GET
-      url: "{{base_url}}/v1/vpn_info"
-      headers:
-        Authorization: "token {{api_key}}"
-      query_params:
-        ip: "{{ip}}"
-    output_params:
-      - name: is_vpn
-        type: boolean
-      - name: is_proxy
-        type: boolean
-      - name: status
-        type: number
-
-  - name: get_malicious_info
-    display_name: Get Malicious Info
-    input_params:
-      - name: ip
-        type: string
-        required: true
-    http:
-      method: GET
-      url: "{{base_url}}/v1/malicious_info"
-      headers:
-        Authorization: "token {{api_key}}"
-      query_params:
-        ip: "{{ip}}"
-    output_params:
-      - name: is_malicious
-        type: boolean
-      - name: can_remote_access
-        type: boolean
-      - name: vulnerability
-        type: object
-      - name: scanning_record
-        type: object
+paths:
+  /api/v1/search/all:
+    get:
+      summary: FOFA üzerinde arama yap
+      description: FOFA'nın tüm kaynaklarında dork sorgusu yapar
+      parameters:
+        - name: key
+          in: query
+          required: true
+          description: FOFA API key
+          schema:
+            type: string
+        - name: q
+          in: query
+          required: true
+          description: FOFA dork sorgusu (örnek: `app="nginx"`)
+          schema:
+            type: string
+        - name: size
+          in: query
+          required: false
+          description: Döndürülecek sonuç sayısı (varsayılan: 10)
+          schema:
+            type: integer
+        - name: fields
+          in: query
+          required: false
+          description: Hangi alanların döneceği, virgülle ayrılmış (örnek: ip,host,port)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Başarılı istek
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mode:
+                    type: string
+                  page:
+                    type: integer
+                  size:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: string
+        '401':
+          description: Yetkisiz - API key geçersiz
+        '400':
+          description: Geçersiz istek
+security:
+  - ApiKeyQuery: []
